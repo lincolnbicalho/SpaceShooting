@@ -10,6 +10,7 @@ public class SpawnManager : MonoBehaviour
     private GameObject _enemyPrefab;
     void Start()
     {
+        SpawnEnemy();
         InvokeRepeating(nameof(SpawnEnemy), 4f, 3f);
     }
 

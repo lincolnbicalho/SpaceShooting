@@ -6,6 +6,10 @@ public class Player : MonoBehaviour
 {
     [SerializeField]
     private GameObject _laserPrefab;
+    [SerializeField]
+    private GameObject _explosionPrefab;
+    [SerializeField]
+    private int _lives = 3;
     private float moveSpeed = 3f;
     private float gunHeat;
     private Animator _animator;
@@ -27,7 +31,8 @@ public class Player : MonoBehaviour
     {
         float xInput = Input.GetAxis("Horizontal");
         float yInput = Input.GetAxis("Vertical");
-        AnimationTurn(xInput, yInput);
+        if (_lives > 0)
+            AnimationTurn(xInput, yInput);
 
         var moveVector = new Vector3(xInput, yInput, 0) * moveSpeed * Time.deltaTime;
         var newPosition = transform.position + moveVector;
@@ -43,8 +48,8 @@ public class Player : MonoBehaviour
         gunHeat -= Time.deltaTime;
         if (Input.GetKeyDown(KeyCode.Space) && gunHeat <= 0)
         {
-            gunHeat = 0.5f;
-            Instantiate(_laserPrefab, transform.position + new Vector3(0f, 0.98f), Quaternion.identity);
+            gunHeat = 0.3f;
+            var shoot = Instantiate(_laserPrefab, transform.position + new Vector3(0f, 1f), Quaternion.identity);
         }
     }
 
@@ -64,6 +69,37 @@ public class Player : MonoBehaviour
         {
             _isTurn = false;
             _animator.SetTrigger("OnExit");
+        }
+    }
+
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.tag == "Laser")
+        {
+            var player = other.GetComponentInParent<Player>();
+            if (player is null)
+            {
+                Damage();
+                Destroy(other.gameObject);
+            }
+        }
+        else if (other.tag == "Enemy")
+        {
+            if (!other.GetComponent<Enemy>().IsSelfDestroying())
+                Damage();
+        }
+
+    }
+
+    public void Damage()
+    {
+        _lives--;
+        if (_lives == 0)
+        {
+            var spawnExplosin = Instantiate(_explosionPrefab, transform.position, Quaternion.identity);
+            Destroy(spawnExplosin, 2.5f);
+            Destroy(gameObject, .2f);
         }
     }
 }
