@@ -10,10 +10,14 @@ public class Enemy : MonoBehaviour
     private float _laserCountdown;
     private bool _isSelfDestroying = false;
     private AudioSource _animator;
+    private GameManager _gameManager;
     void Start()
     {
         _laserCountdown = Random.Range(2f, 5f);
         _animator = GetComponent<AudioSource>();
+        _gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+        if (_gameManager is null)
+            Debug.LogError("GameManager is NULL in Enemy.cs", _gameManager);
     }
 
     void Update()
@@ -36,7 +40,7 @@ public class Enemy : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.tag == "Laser" && !_isSelfDestroying)
+        if (other.tag == "Laser")
         {
             var parent = other.transform.parent;
             Destroy(other.gameObject);
@@ -45,7 +49,7 @@ public class Enemy : MonoBehaviour
             else
                 SelfDestroy();
         }
-        else if (other.tag == "Player" && !_isSelfDestroying)
+        else if (other.tag == "Player")
         {
             SelfDestroy();
         }
@@ -53,10 +57,12 @@ public class Enemy : MonoBehaviour
 
     private void SelfDestroy()
     {
-        _isSelfDestroying = true;
+        _gameManager.SetScore(10);
+        Destroy(gameObject.GetComponent<Collider2D>());
         gameObject.GetComponent<Animator>().SetTrigger("OnExplosion");
         Destroy(gameObject, 2.35f);
         _animator.Play();
+        _isSelfDestroying = true;
     }
 
 

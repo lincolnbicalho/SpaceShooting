@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEditor.Experimental.GraphView.GraphView;
 
 public class SpawnManager : MonoBehaviour
 {
@@ -11,17 +12,20 @@ public class SpawnManager : MonoBehaviour
     [SerializeField]
     private List<GameObject> _powerups;
     private float _spawnEnemyTime;
+    private Player _player;
     void Start()
     {
-        SpawnEnemy();
+        _player = GameObject.Find("Player").GetComponent<Player>();
+        if (_player is null)
+            Debug.LogError("Player is NULL in Enemy.cs", _player);
         InvokeRepeating(nameof(SpawnPowerup), 4f, 7f);
     }
     void Update()
     {
-        if(Time.time > _spawnEnemyTime)
+        if (Time.time > _spawnEnemyTime && _player.IsAlive)
         {
             SpawnEnemy();
-            _spawnEnemyTime = Time.time + Random.Range(1.5f, 5f);
+            _spawnEnemyTime = Time.time + Random.Range(1, 5);
         }
     }
 
@@ -32,8 +36,10 @@ public class SpawnManager : MonoBehaviour
 
     void SpawnPowerup()
     {
+        if (_player.IsAlive)
+            Instantiate(_powerups[Random.Range(0, 3)], new Vector3(Random.Range(-4.94f, 4.94f), 8f), Quaternion.identity);
+        else
+            CancelInvoke("SpawnPowerup");
 
-        Instantiate(_powerups[Random.Range(0, 3)], new Vector3(Random.Range(-4.94f, 4.94f), 8f), Quaternion.identity);
     }
-
 }

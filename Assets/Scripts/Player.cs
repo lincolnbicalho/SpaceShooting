@@ -104,8 +104,8 @@ public class Player : MonoBehaviour
         }
         else if (other.tag == "Enemy")
         {
-            if (!other.GetComponent<Enemy>().IsSelfDestroying())
-                Damage();
+            Damage();
+            //if (!other.GetComponent<Enemy>().IsSelfDestroying())  
         }
         else if (other.tag == "Powerup")
         {
@@ -173,8 +173,10 @@ public class Player : MonoBehaviour
         }
         if (_lives == 0)
         {
-
+            GameObject.Find("GameManager")?.GetComponent<GameManager>().GameOver();
         }
     }
+    public bool IsAlive { get => (_lives > 0) ? true : false;  }  
+    public int Lives { get { return _lives; } }
 }
 
