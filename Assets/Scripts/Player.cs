@@ -10,6 +10,10 @@ public class Player : MonoBehaviour
     private GameObject _explosionPrefab;
     [SerializeField]
     private int _lives = 3;
+    [SerializeField]
+    private GameObject _leftWingDamage;
+    [SerializeField]
+    private GameObject _rightWingDamage;
     private float moveSpeed = 3f;
     private float gunHeat;
     private Animator _animator;
@@ -89,17 +93,42 @@ public class Player : MonoBehaviour
             if (!other.GetComponent<Enemy>().IsSelfDestroying())
                 Damage();
         }
+        else if (other.tag == "Powerup")
+        {
+            PowerupPlayer(other.name);
+            Destroy(other.gameObject);
+        }
 
+    }
+
+    private void PowerupPlayer(string name)
+    {
+        if (name.Contains("Tripleshot")) { }
+        else if (name.Contains("Shield")) { }
+        else if (name.Contains("Speed")) { }
+        Debug.LogWarning(name);
     }
 
     public void Damage()
     {
         _lives--;
+        switch (_lives)
+        {
+            case 2:
+                _rightWingDamage.SetActive(true);
+                break;
+            case 1:
+                _leftWingDamage.SetActive(true);
+                break;
+            case 0:
+                var spawnExplosin = Instantiate(_explosionPrefab, transform.position, Quaternion.identity);
+                Destroy(spawnExplosin, 2.5f);
+                Destroy(gameObject, .2f);
+                break;
+        }
         if (_lives == 0)
         {
-            var spawnExplosin = Instantiate(_explosionPrefab, transform.position, Quaternion.identity);
-            Destroy(spawnExplosin, 2.5f);
-            Destroy(gameObject, .2f);
+
         }
     }
 }

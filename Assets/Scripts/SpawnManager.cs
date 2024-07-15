@@ -8,21 +8,32 @@ public class SpawnManager : MonoBehaviour
     private GameObject _enemyContainer;
     [SerializeField]
     private GameObject _enemyPrefab;
+    [SerializeField]
+    private List<GameObject> _powerups;
+    private float _spawnEnemyTime;
     void Start()
     {
         SpawnEnemy();
-        InvokeRepeating(nameof(SpawnEnemy), 4f, 3f);
+        InvokeRepeating(nameof(SpawnPowerup), 4f, 7f);
     }
-
-    // Update is called once per frame
     void Update()
     {
-        
+        if(Time.time > _spawnEnemyTime)
+        {
+            SpawnEnemy();
+            _spawnEnemyTime = Time.time + Random.Range(3f, 7f);
+        }
     }
 
     void SpawnEnemy()
     {
         Instantiate(_enemyPrefab, new Vector3(Random.Range(-4.94f, 4.94f), 8f), Quaternion.identity, _enemyContainer.transform);
+    }
+
+    void SpawnPowerup()
+    {
+
+        Instantiate(_powerups[Random.Range(0, 3)], new Vector3(Random.Range(-4.94f, 4.94f), 8f), Quaternion.identity);
     }
 
 }

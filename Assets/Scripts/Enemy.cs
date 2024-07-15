@@ -25,10 +25,11 @@ public class Enemy : MonoBehaviour
             transform.position = new Vector3(Random.Range(-9.54f, 9.54f), 8f);
         }
 
-        if (_laserCountdown < Time.time)
+        if (_laserCountdown < Time.time && _isSelfDestroying == false)
         {
             var _laser = Instantiate(_laserPrefab, transform.position + new Vector3(0, -1f), Quaternion.identity);
             _laser.GetComponent<Laser>().SetEnemyBehavior();
+            _laser.transform.parent = transform;
             _laserCountdown = Time.time + Random.Range(2f, 5f);
         }
     }
@@ -37,8 +38,12 @@ public class Enemy : MonoBehaviour
     {
         if (other.tag == "Laser" && !_isSelfDestroying)
         {
+            var parent = other.transform.parent;
             Destroy(other.gameObject);
-            SelfDestroy();
+            if (parent?.name != null && parent.name.Contains("Enemy"))
+                return;
+            else
+                SelfDestroy();
         }
         else if (other.tag == "Player" && !_isSelfDestroying)
         {
