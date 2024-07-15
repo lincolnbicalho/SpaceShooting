@@ -21,7 +21,7 @@ public class SpawnManager : MonoBehaviour
         if(Time.time > _spawnEnemyTime)
         {
             SpawnEnemy();
-            _spawnEnemyTime = Time.time + Random.Range(3f, 7f);
+            _spawnEnemyTime = Time.time + Random.Range(1.5f, 5f);
         }
     }
 

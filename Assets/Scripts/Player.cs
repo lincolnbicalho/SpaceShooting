@@ -14,7 +14,11 @@ public class Player : MonoBehaviour
     private GameObject _leftWingDamage;
     [SerializeField]
     private GameObject _rightWingDamage;
-    private float moveSpeed = 3f;
+    [SerializeField]
+    private GameObject _playerShield;
+    private bool _isShieldActivate = false;
+    private bool _isTripleshotActive = false;
+    private float _moveSpeed = 3f;
     private float gunHeat;
     private Animator _animator;
     private bool _isTurn = false;
@@ -38,7 +42,7 @@ public class Player : MonoBehaviour
         if (_lives > 0)
             AnimationTurn(xInput, yInput);
 
-        var moveVector = new Vector3(xInput, yInput, 0) * moveSpeed * Time.deltaTime;
+        var moveVector = new Vector3(xInput, yInput, 0) * _moveSpeed * Time.deltaTime;
         var newPosition = transform.position + moveVector;
 
         newPosition.x = Mathf.Clamp(newPosition.x, -9.9f, 9.9f);
@@ -53,7 +57,17 @@ public class Player : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space) && gunHeat <= 0)
         {
             gunHeat = 0.3f;
-            var shoot = Instantiate(_laserPrefab, transform.position + new Vector3(0f, 1f), Quaternion.identity);
+            if (_isTripleshotActive)
+            {
+                Instantiate(_laserPrefab, transform.position + new Vector3(0f, 1f), Quaternion.identity);
+                Instantiate(_laserPrefab, transform.position + new Vector3(-0.621f, -0.13f), Quaternion.identity);
+                Instantiate(_laserPrefab, transform.position + new Vector3(0.621f, -0.13f), Quaternion.identity);
+            }
+            else
+            {
+                Instantiate(_laserPrefab, transform.position + new Vector3(0f, 1f), Quaternion.identity);
+            }
+            
         }
     }
 
@@ -81,8 +95,8 @@ public class Player : MonoBehaviour
     {
         if (other.tag == "Laser")
         {
-            var player = other.GetComponentInParent<Player>();
-            if (player is null)
+            var enemy = other.GetComponentInParent<Enemy>();
+            if (enemy is not null)
             {
                 Damage();
                 Destroy(other.gameObject);
@@ -103,14 +117,45 @@ public class Player : MonoBehaviour
 
     private void PowerupPlayer(string name)
     {
-        if (name.Contains("Tripleshot")) { }
-        else if (name.Contains("Shield")) { }
-        else if (name.Contains("Speed")) { }
-        Debug.LogWarning(name);
+        if (name.Contains("Tripleshot"))
+        {
+            StartCoroutine(ActivateTripleshot());
+        }
+        else if (name.Contains("Shield"))
+        {
+            StartCoroutine(ActivateShield());
+        }
+        else if (name.Contains("Speed"))
+        {
+            StartCoroutine(SpeedPlayer());
+        }
+    }
+    IEnumerator SpeedPlayer()
+    {
+        _moveSpeed = 6f;
+        yield return new WaitForSeconds(5);
+        _moveSpeed = 3f;
     }
 
+    IEnumerator ActivateShield()
+    {
+        _playerShield.SetActive(true);
+        _isShieldActivate = true;
+        yield return new WaitForSeconds(7);
+        _playerShield.SetActive(false);
+        _isShieldActivate = false;
+    }
+
+    IEnumerator ActivateTripleshot()
+    {
+        _isTripleshotActive = true;
+        yield return new WaitForSeconds(5);
+        _isTripleshotActive = false;
+    }
     public void Damage()
     {
+        if (_isShieldActivate)
+            return;
         _lives--;
         switch (_lives)
         {
